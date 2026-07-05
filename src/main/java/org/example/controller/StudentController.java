@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import org.example.anno.PreAuthorize;
 import org.example.pojo.PageResult;
 import org.example.pojo.Result;
 import org.example.pojo.Student;
@@ -20,6 +21,7 @@ public class StudentController {
     /**
      * 添加学生
      */
+    @PreAuthorize("stu:stu:add")
     @PostMapping
     public Result save(@RequestBody Student student){
         studentService.save(student);
@@ -29,6 +31,7 @@ public class StudentController {
     /**
      * 条件分页查询
      */
+    @PreAuthorize("stu:stu:list")
     @GetMapping
     public Result page(String name ,
                        Integer degree,
@@ -42,6 +45,7 @@ public class StudentController {
     /**
      * 根据ID查询学生信息
      */
+    @PreAuthorize("stu:stu:list")
     @GetMapping("/{id}")
     public Result getInfo(@PathVariable Integer id){
         Student student = studentService.getInfo(id);
@@ -51,6 +55,7 @@ public class StudentController {
     /**
      * 修改学生信息
      */
+    @PreAuthorize("stu:stu:edit")
     @PutMapping
     public Result update(@RequestBody Student student){
         studentService.update(student);
@@ -60,6 +65,7 @@ public class StudentController {
     /**
      * 删除学生信息
      */
+    @PreAuthorize("stu:stu:delete")
     @DeleteMapping("/{ids}")
     public Result delete(@PathVariable List<Integer> ids){
         studentService.delete(ids);
@@ -69,6 +75,7 @@ public class StudentController {
     /**
      * 违纪处理
      */
+    @PreAuthorize("stu:stu:edit")
     @PutMapping("/violation/{id}/{score}")
     public Result violationHandle(@PathVariable Integer id , @PathVariable Integer score){
         studentService.violationHandle(id, score);

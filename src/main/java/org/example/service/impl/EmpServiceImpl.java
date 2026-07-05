@@ -8,6 +8,8 @@ import org.example.mapper.EmpMapper;
 import org.example.pojo.*;
 import org.example.service.EmpLogService;
 import org.example.service.EmpService;
+import org.example.service.PermissionService;
+import org.example.service.RoleService;
 import org.example.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,10 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -30,6 +34,10 @@ public class EmpServiceImpl implements EmpService {
     private EmpExprMapper empExprMapper;
     @Autowired
     private EmpLogService empLogService;
+    @Autowired
+    private RoleService roleService;
+    @Autowired
+    private PermissionService permissionService;
 
     @Override
     public PageResult<Emp> getByPage(EmpQueryParam empQueryParam) {
@@ -127,7 +135,34 @@ public class EmpServiceImpl implements EmpService {
             claims.put("username", e.getUsername());
             String jwt = JwtUtils.generateToken(claims);
 
-            return new LoginInfo(e.getId(), e.getUsername(), e.getName(), jwt);
+            // 查询角色和权限
+            List<Role> roles = roleService.selectRolesByEmpId(e.getId());
+            List<String> roleCodes = roles.stream()
+                    .map(Role::getCode)
+                    .collect(Collectors.toList());
+
+            List<String> permissions = permissionService.selectPermissionsByEmpId(e.getId());
+
+            // 如果是管理员角色，授予全部权限
+            if (roleCodes.contains("admin")) {
+                permissions = new ArrayList<>();
+                permissions.add("*");
+            }
+
+            // 组装用户信息
+            LoginInfo.UserInfo userInfo = new LoginInfo.UserInfo(
+                    e.getId(),
+                    e.getUsername(),
+                    e.getName(),
+                    e.getGender(),
+                    e.getPhone(),
+                    e.getJob(),
+                    e.getDeptId(),
+                    e.getDeptName(),
+                    e.getImage()
+            );
+
+            return new LoginInfo(e.getId(), e.getUsername(), e.getName(), jwt, roleCodes, permissions, userInfo);
         }
 
         //3. 不存在, 返回null

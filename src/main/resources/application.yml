@@ -26,6 +26,7 @@ mybatis:
 #配置事务管理日志级别
 logging:
   level:
+    "[org.example]": debug
     org.springframework.jdbc.support.JdbcTransactionManager: debug
 
 #阿里云文件上传服务

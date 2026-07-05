@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.anno.PreAuthorize;
 import org.example.pojo.Emp;
 import org.example.pojo.EmpQueryParam;
 import org.example.pojo.PageResult;
@@ -25,6 +26,7 @@ public class EmpController {
     /**
      * 分页查询
      */
+    @PreAuthorize("system:emp:list")
     @GetMapping
     public Result getByPage(EmpQueryParam empQueryParam){
         log.info("分页查询: {}", empQueryParam);
@@ -35,6 +37,7 @@ public class EmpController {
     /**
      * 根据ID查询员工信息
      */
+    @PreAuthorize("system:emp:list")
     @GetMapping("/{id}")
     public Result getInfo(@PathVariable Integer id){
         log.info("根据ID查询员工信息: {}", id);
@@ -45,6 +48,7 @@ public class EmpController {
     /**
      * 新增员工
      */
+    @PreAuthorize("system:emp:add")
     @PostMapping
     public Result save(@RequestBody Emp emp) throws Exception {
         log.info("新增员工: {}", emp);
@@ -55,6 +59,7 @@ public class EmpController {
     /**
      * 删除员工
      */
+    @PreAuthorize("system:emp:delete")
     @DeleteMapping
     public Result delete(@RequestParam List<Integer> ids){
         log.info("删除员工: {}", ids);
@@ -65,6 +70,7 @@ public class EmpController {
     /**
      * 修改员工
      */
+    @PreAuthorize("system:emp:edit")
     @PutMapping
     public Result update(@RequestBody Emp emp){
         log.info("修改员工: {}", emp);

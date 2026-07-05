@@ -15,9 +15,12 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
+import org.springframework.core.annotation.Order;
+
 @Slf4j
 @Aspect
 @Component
+@Order(2) // 权限切面优先于日志切面执行
 public class OperationLogAspect {
 
     @Autowired

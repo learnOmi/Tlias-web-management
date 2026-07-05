@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import org.example.anno.PreAuthorize;
 import org.example.pojo.ClazzCountOption;
 import org.example.pojo.JobOption;
 import org.example.pojo.Result;
@@ -24,6 +25,7 @@ public class ReportController {
     /**
      * 统计员工职位人数
      */
+    @PreAuthorize("report:emp:view")
     @GetMapping("/empJobData")
     public Result getEmpJobData(){
         log.info("统计员工职位人数");
@@ -34,6 +36,7 @@ public class ReportController {
     /**
      * 统计员工性别人数
      */
+    @PreAuthorize("report:emp:view")
     @GetMapping("/empGenderData")
     public Result getEmpGenderData(){
         log.info("统计员工性别人数");
@@ -44,6 +47,7 @@ public class ReportController {
     /**
      * 统计学员的学历信息
      */
+    @PreAuthorize("report:stu:view")
     @GetMapping("/studentDegreeData")
     public Result getStudentDegreeData(){
         log.info("统计学员的学历信息");
@@ -54,6 +58,7 @@ public class ReportController {
     /**
      * 班级人数统计
      */
+    @PreAuthorize("report:stu:view")
     @GetMapping("/studentCountData")
     public Result getStudentCountData(){
         log.info("班级人数统计");

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.PermissionMapper">
+
+    <!-- 根据员工ID查询所有权限代码 -->
+    <select id="selectCodesByEmpId" resultType="java.lang.String">
+        SELECT p.code
+        FROM permission p
+        INNER JOIN role_permission rp ON p.id = rp.permission_id
+        INNER JOIN emp_role er ON rp.role_id = er.role_id
+        WHERE er.emp_id = #{empId}
+    </select>
+
+</mapper>

@@ -1,19 +1,31 @@
 package org.example.filter;
 
 import io.jsonwebtoken.Claims;
+import org.example.service.PermissionService;
+import org.example.service.RoleService;
 import org.example.utils.CurrentHolder;
 import org.example.utils.JwtUtils;
+import org.example.utils.PermissionHolder;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @WebFilter(urlPatterns = "/*")
 public class TokenFilter implements Filter {
+
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private PermissionService permissionService;
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
@@ -44,6 +56,11 @@ public class TokenFilter implements Filter {
             Claims claims = JwtUtils.parseToken(token);
             Integer empId = Integer.valueOf(claims.get("id").toString());
             CurrentHolder.setCurrentId(empId); //存入
+
+            // 加载当前用户的权限信息
+            List<String> permissions = permissionService.selectPermissionsByEmpId(empId);
+            PermissionHolder.setPermissions(permissions);
+
             log.info("当前登录员工ID: {}, 将其存入ThreadLocal", empId);
         } catch (Exception e) {
             log.info("令牌非法, 响应401");
@@ -57,6 +74,7 @@ public class TokenFilter implements Filter {
 
         //7. 删除ThreadLocal中的数据
         CurrentHolder.remove();
+        PermissionHolder.remove();
 
     }
 }
