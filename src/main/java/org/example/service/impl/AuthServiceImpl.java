@@ -120,4 +120,16 @@ public class AuthServiceImpl implements AuthService {
         log.info("Token 刷新成功, empId: {}", empId);
         return loginInfo;
     }
+
+    @Override
+    public void logout(String refreshToken) {
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            log.warn("登出失败：refreshToken 为空");
+            return;
+        }
+
+        // 吊销当前设备的 refreshToken（多设备模式下只登出当前设备）
+        refreshTokenMapper.revokeByToken(refreshToken);
+        log.info("登出成功，refreshToken 已吊销");
+    }
 }

@@ -28,7 +28,8 @@ public interface RefreshTokenMapper {
     int revokeByToken(@Param("token") String token);
 
     /**
-     * 根据用户ID删除所有刷新令牌
+     * 清理过期或已吊销的刷新令牌
+     * @return 删除的记录数
      */
-    int deleteByEmpId(@Param("empId") Integer empId);
+    int deleteExpired();
 }

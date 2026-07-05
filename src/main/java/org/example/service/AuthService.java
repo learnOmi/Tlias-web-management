@@ -13,4 +13,10 @@ public interface AuthService {
      * @return 新的双 Token 信息
      */
     LoginInfo refreshToken(String refreshToken);
+
+    /**
+     * 登出（吊销当前设备的 refreshToken）
+     * @param refreshToken 当前设备的刷新令牌
+     */
+    void logout(String refreshToken);
 }

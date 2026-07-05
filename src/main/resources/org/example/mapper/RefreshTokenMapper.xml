@@ -18,8 +18,9 @@
         UPDATE refresh_token SET revoked = 1 WHERE token = #{token}
     </update>
 
-    <delete id="deleteByEmpId">
-        DELETE FROM refresh_token WHERE emp_id = #{empId}
+    <delete id="deleteExpired">
+        DELETE FROM refresh_token
+        WHERE expire_time &lt; NOW() OR revoked = 1
     </delete>
 
 </mapper>

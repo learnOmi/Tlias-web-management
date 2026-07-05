@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 认证Controller
- * 提供 Token 刷新接口
+ * 提供 Token 刷新和登出接口
  */
 @Slf4j
 @RestController
@@ -38,5 +38,18 @@ public class AuthController {
         }
 
         return Result.error("refreshToken已失效");
+    }
+
+    /**
+     * 登出
+     * 吊销当前设备的 refreshToken（多设备模式下只登出当前设备，不影响其他设备）
+     */
+    @PostMapping("/logout")
+    public Result logout(@RequestBody String refreshTokenJson) {
+        String refreshToken = refreshTokenJson.replace("\"", "").trim();
+        log.info("登出请求");
+
+        authService.logout(refreshToken);
+        return Result.success();
     }
 }
