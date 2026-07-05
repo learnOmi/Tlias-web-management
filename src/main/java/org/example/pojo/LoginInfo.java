@@ -16,15 +16,23 @@ public class LoginInfo {
     private Integer id;
     private String username;
     private String name;
-    private String token;
     
-    // 新增：角色列表
+    // 新增：访问令牌（2小时有效）
+    private String accessToken;
+    
+    // 新增：刷新令牌（7天有效）
+    private String refreshToken;
+    
+    // 新增：accessToken 过期时间（秒）
+    private Long expiresIn;
+    
+    // 角色列表
     private List<String> roles;
     
-    // 新增：权限代码列表
+    // 权限代码列表
     private List<String> permissions;
     
-    // 新增：用户完整信息
+    // 用户完整信息
     private UserInfo userInfo;
     
     /**
@@ -46,12 +54,12 @@ public class LoginInfo {
     }
     
     /**
-     * 兼容旧版构造方法
+     * 兼容旧版构造方法（仅 accessToken）
      */
     public LoginInfo(Integer id, String username, String name, String token) {
         this.id = id;
         this.username = username;
         this.name = name;
-        this.token = token;
+        this.accessToken = token;
     }
 }

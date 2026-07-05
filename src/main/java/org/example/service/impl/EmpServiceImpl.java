@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.mapper.EmpExprMapper;
 import org.example.mapper.EmpMapper;
+import org.example.mapper.RefreshTokenMapper;
 import org.example.pojo.*;
 import org.example.service.EmpLogService;
 import org.example.service.EmpService;
@@ -38,6 +39,8 @@ public class EmpServiceImpl implements EmpService {
     private RoleService roleService;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private RefreshTokenMapper refreshTokenMapper;
 
     @Override
     public PageResult<Emp> getByPage(EmpQueryParam empQueryParam) {
@@ -129,11 +132,6 @@ public class EmpServiceImpl implements EmpService {
         //2. 判断: 判断是否存在这个员工, 如果存在, 组装登录成功信息
         if(e != null){
             log.info("登录成功, 员工信息: {}", e);
-            //生成JWT令牌
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("id", e.getId());
-            claims.put("username", e.getUsername());
-            String jwt = JwtUtils.generateToken(claims);
 
             // 查询角色和权限
             List<Role> roles = roleService.selectRolesByEmpId(e.getId());
@@ -162,11 +160,61 @@ public class EmpServiceImpl implements EmpService {
                     e.getImage()
             );
 
-            return new LoginInfo(e.getId(), e.getUsername(), e.getName(), jwt, roleCodes, permissions, userInfo);
+            // 生成 accessToken
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("id", e.getId());
+            claims.put("username", e.getUsername());
+            String accessToken = JwtUtils.generateAccessToken(claims);
+
+            // 生成 refreshToken
+            Map<String, Object> refreshClaims = new HashMap<>();
+            refreshClaims.put("id", e.getId());
+            String refreshToken = JwtUtils.generateRefreshToken(refreshClaims);
+
+            // 保存新 refreshToken 到数据库（多设备登录模式，每次登录生成独立的 refreshToken）
+            RefreshToken tokenRecord = new RefreshToken();
+            tokenRecord.setEmpId(e.getId());
+            tokenRecord.setToken(refreshToken);
+            tokenRecord.setExpireTime(LocalDateTime.now().plusDays(7));
+            tokenRecord.setCreateTime(LocalDateTime.now());
+            refreshTokenMapper.insert(tokenRecord);
+
+            // 返回双 Token
+            LoginInfo loginInfo = new LoginInfo();
+            loginInfo.setId(e.getId());
+            loginInfo.setUsername(e.getUsername());
+            loginInfo.setName(e.getName());
+            loginInfo.setAccessToken(accessToken);
+            loginInfo.setRefreshToken(refreshToken);
+            loginInfo.setExpiresIn(2 * 60 * 60L); // 2小时
+            loginInfo.setRoles(roleCodes);
+            loginInfo.setPermissions(permissions);
+            loginInfo.setUserInfo(userInfo);
+
+            return loginInfo;
         }
 
         //3. 不存在, 返回null
         return null;
+    }
+
+    @Override
+    public LoginInfo.UserInfo getUserInfoById(Integer id) {
+        Emp emp = empMapper.selectEmpExpById(id);
+        if (emp == null) {
+            return null;
+        }
+        return new LoginInfo.UserInfo(
+                emp.getId(),
+                emp.getUsername(),
+                emp.getName(),
+                emp.getGender(),
+                emp.getPhone(),
+                emp.getJob(),
+                emp.getDeptId(),
+                emp.getDeptName(),
+                emp.getImage()
+        );
     }
 
 }

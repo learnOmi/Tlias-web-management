@@ -24,4 +24,9 @@ public interface EmpService {
      */
     LoginInfo login(Emp emp);
 
+    /**
+     * 根据ID获取用户信息
+     */
+    LoginInfo.UserInfo getUserInfoById(Integer id);
+
 }

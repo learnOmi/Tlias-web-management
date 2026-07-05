@@ -1,36 +1,41 @@
 package org.example.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.example.anno.PreAuthorize;
+import org.example.pojo.FileUploadResult;
 import org.example.pojo.Result;
 import org.example.utils.AliyunOSSOperator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.util.UUID;
-
 @RestController
+@RequestMapping("/files")
 @Slf4j
 public class UploadController {
 
     @Autowired
     private AliyunOSSOperator aliyunOSSOperator;
 
+    @PreAuthorize("system:file:upload")
     @PostMapping("/upload")
-    public Result upload(MultipartFile file) throws Exception {
-        log.info("文件上传: {}", file.getOriginalFilename());
+    public Result upload(@RequestParam("file") MultipartFile file,
+                         @RequestParam(value = "type", required = false) String type) throws Exception {
+        log.info("文件上传: {}, type: {}", file.getOriginalFilename(), type);
 
-        // 保存到本地磁盘
-//        String ext = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-//        String newFileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
-//        file.transferTo(new File("D:/images/" + newFileName));
+        FileUploadResult result = aliyunOSSOperator.upload(file, type);
+        log.info("文件上传OSS成功, url: {}", result.getUrl());
 
-        // 上传到阿里云OSS
-        String url = aliyunOSSOperator.upload(file);
-        log.info("文件上传OSS, url: {}", url);
+        return Result.success(result);
+    }
 
-        return Result.success(url);
+    @PreAuthorize("system:file:delete")
+    @DeleteMapping
+    public Result delete(@RequestParam("url") String url) throws Exception {
+        log.info("文件删除: {}", url);
+
+        aliyunOSSOperator.delete(url);
+
+        return Result.success();
     }
 }

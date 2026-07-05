@@ -41,7 +41,14 @@ public class TokenFilter implements Filter {
             return;
         }
 
-        //3. 获取请求头中的token
+        // 判断是否是 Token 刷新请求, 放行
+        if ("/auth/refresh".equals(requestURI)){
+            log.info("Token 刷新请求, 放行");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        //3. 获取请求头中的token (accessToken)
         String token = request.getHeader("token");
 
         //4. 判断token是否存在, 如果不存在, 说明用户没有登录, 返回错误信息(响应401状态码)
