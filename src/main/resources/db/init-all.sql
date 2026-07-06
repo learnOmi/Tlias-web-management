@@ -167,3 +167,20 @@ INSERT INTO `dict_data` (`type`, `label`, `value`, `sort`) VALUES
 INSERT INTO `dict_data` (`type`, `label`, `value`, `sort`) VALUES
 ('gender', '男', '1', 1),
 ('gender', '女', '2', 2);
+
+-- ============================================
+-- 7. 前端日志表
+-- ============================================
+CREATE TABLE IF NOT EXISTS `frontend_log` (
+    `id` INT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    `emp_id` INT COMMENT '操作用户ID',
+    `type` VARCHAR(20) NOT NULL COMMENT '日志类型：error/performance/behavior',
+    `level` VARCHAR(10) COMMENT '日志级别：info/warn/error',
+    `message` TEXT COMMENT '日志内容',
+    `url` VARCHAR(500) COMMENT '请求URL',
+    `user_agent` VARCHAR(500) COMMENT '浏览器UA',
+    `operate_ip` VARCHAR(50) COMMENT '操作IP',
+    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    INDEX `idx_type` (`type`),
+    INDEX `idx_emp_id` (`emp_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='前端日志表';

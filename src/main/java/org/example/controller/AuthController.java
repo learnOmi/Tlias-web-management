@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.pojo.LoginInfo;
 import org.example.pojo.Result;
 import org.example.service.AuthService;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "认证管理", description = "Token 刷新和登出接口")
 public class AuthController {
 
     @Autowired
@@ -26,6 +29,7 @@ public class AuthController {
      * 刷新 Token
      * 使用 refreshToken 换取新的双 Token 对
      */
+    @Operation(summary = "刷新 Token")
     @PostMapping("/refresh")
     public Result refreshToken(@RequestBody String refreshTokenJson) {
         // 解析 refreshToken（前端直接传入 refreshToken 字符串）
@@ -44,6 +48,7 @@ public class AuthController {
      * 登出
      * 吊销当前设备的 refreshToken（多设备模式下只登出当前设备，不影响其他设备）
      */
+    @Operation(summary = "用户登出")
     @PostMapping("/logout")
     public Result logout(@RequestBody String refreshTokenJson) {
         String refreshToken = refreshTokenJson.replace("\"", "").trim();

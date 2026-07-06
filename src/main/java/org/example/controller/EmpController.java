@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.example.anno.PreAuthorize;
 import org.example.pojo.Emp;
@@ -18,6 +20,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/emps")
+@Tag(name = "员工管理", description = "员工 CRUD 接口")
 public class EmpController {
 
     @Autowired
@@ -26,6 +29,7 @@ public class EmpController {
     /**
      * 分页查询
      */
+    @Operation(summary = "分页查询员工")
     @PreAuthorize("system:emp:list")
     @GetMapping
     public Result getByPage(EmpQueryParam empQueryParam){
@@ -37,6 +41,7 @@ public class EmpController {
     /**
      * 根据ID查询员工信息
      */
+    @Operation(summary = "根据ID查询员工")
     @PreAuthorize("system:emp:list")
     @GetMapping("/{id}")
     public Result getInfo(@PathVariable Integer id){
@@ -48,6 +53,7 @@ public class EmpController {
     /**
      * 新增员工
      */
+    @Operation(summary = "新增员工")
     @PreAuthorize("system:emp:add")
     @PostMapping
     public Result save(@RequestBody Emp emp) throws Exception {
@@ -59,6 +65,7 @@ public class EmpController {
     /**
      * 删除员工
      */
+    @Operation(summary = "删除员工")
     @PreAuthorize("system:emp:delete")
     @DeleteMapping
     public Result delete(@RequestParam List<Integer> ids){
@@ -70,6 +77,7 @@ public class EmpController {
     /**
      * 修改员工
      */
+    @Operation(summary = "修改员工")
     @PreAuthorize("system:emp:edit")
     @PutMapping
     public Result update(@RequestBody Emp emp){

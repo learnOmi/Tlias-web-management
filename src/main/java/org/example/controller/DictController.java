@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.example.pojo.DictData;
 import org.example.pojo.DictItem;
@@ -19,6 +21,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/dicts")
+@Tag(name = "数据字典", description = "数据字典查询接口")
 public class DictController {
 
     @Autowired
@@ -30,6 +33,7 @@ public class DictController {
      * @param type 字典类型，如 emp_job、gender
      * @return 字典项列表（label/value）
      */
+    @Operation(summary = "按类型查询字典")
     @GetMapping
     public Result getByType(@RequestParam(required = false) String type) {
         log.info("根据类型查询字典: {}", type);
@@ -45,6 +49,7 @@ public class DictController {
      *
      * @return 全部字典数据
      */
+    @Operation(summary = "查询全部字典")
     @GetMapping("/all")
     public Result getAll() {
         log.info("查询全部字典数据");

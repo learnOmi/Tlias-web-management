@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.example.anno.PreAuthorize;
 import org.example.pojo.FrontendLog;
@@ -24,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @Slf4j
 @RestController
 @RequestMapping("/log")
+@Tag(name = "日志管理", description = "操作日志和前端日志接口")
 public class LogController {
 
     @Autowired
@@ -39,6 +42,7 @@ public class LogController {
      * @param request HTTP 请求
      * @return 处理结果
      */
+    @Operation(summary = "前端日志上报")
     @PostMapping("/report")
     public Result report(@RequestBody FrontendLogReport report, HttpServletRequest request) {
         log.info("收到前端日志上报: type={}, level={}", report.getType(), report.getLevel());
@@ -62,6 +66,7 @@ public class LogController {
      * @param param 查询参数
      * @return 分页结果
      */
+    @Operation(summary = "分页查询操作日志")
     @PreAuthorize("report:log:view")
     @GetMapping("/operate/page")
     public Result operatePage(OperateLogQueryParam param) {
@@ -76,6 +81,7 @@ public class LogController {
      * @param param 查询参数
      * @return 分页结果
      */
+    @Operation(summary = "分页查询前端日志")
     @PreAuthorize("report:log:view")
     @GetMapping("/frontend/page")
     public Result frontendPage(FrontendLogQueryParam param) {

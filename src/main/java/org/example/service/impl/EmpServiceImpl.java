@@ -12,6 +12,7 @@ import org.example.service.EmpService;
 import org.example.service.PermissionService;
 import org.example.service.RoleService;
 import org.example.utils.JwtUtils;
+import org.example.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,10 @@ public class EmpServiceImpl implements EmpService {
     private PermissionService permissionService;
     @Autowired
     private RefreshTokenMapper refreshTokenMapper;
+    @Autowired
+    private PermissionServiceImpl permissionServiceImpl;
+    @Autowired
+    private RoleServiceImpl roleServiceImpl;
 
     @Override
     public PageResult<Emp> getByPage(EmpQueryParam empQueryParam) {
@@ -98,6 +103,8 @@ public class EmpServiceImpl implements EmpService {
     public void deleteByIds(List<Integer> ids) {
         empMapper.deleteByIds(ids);
         empExprMapper.deleteByEmpIds(ids);
+        // 清除缓存
+        clearEmpCache(ids);
     }
 
     @Override
@@ -122,6 +129,8 @@ public class EmpServiceImpl implements EmpService {
             exprList.forEach(empExpr -> empExpr.setEmpId(emp.getId()));
             empExprMapper.insertBatch(exprList);
         }
+        // 清除缓存
+        clearEmpCache(List.of(emp.getId()));
     }
 
     @Override
@@ -215,6 +224,16 @@ public class EmpServiceImpl implements EmpService {
                 emp.getDeptName(),
                 emp.getImage()
         );
+    }
+
+    /**
+     * 清除指定员工 ID 列表的权限和角色缓存
+     */
+    private void clearEmpCache(List<Integer> empIds) {
+        for (Integer empId : empIds) {
+            permissionServiceImpl.clearCache(empId);
+            roleServiceImpl.clearCache(empId);
+        }
     }
 
 }

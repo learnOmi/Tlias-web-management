@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.pojo.LoginInfo;
 import org.example.pojo.Result;
 import org.example.service.PermissionService;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/user")
+@Tag(name = "用户信息", description = "获取当前用户信息接口")
 public class UserController {
 
     @Autowired
@@ -33,6 +36,7 @@ public class UserController {
      * 获取当前登录用户的信息（角色、权限）
      * 用于页面刷新后重新获取权限数据
      */
+    @Operation(summary = "获取当前用户信息")
     @GetMapping("/info")
     public Result getUserInfo() {
         Integer empId = CurrentHolder.getCurrentId();

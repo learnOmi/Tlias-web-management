@@ -1,5 +1,7 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.pojo.Emp;
 import org.example.pojo.LoginInfo;
 import org.example.pojo.Result;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
+@Tag(name = "认证管理", description = "登录认证相关接口")
 public class LoginController {
 
     @Autowired
@@ -23,6 +26,7 @@ public class LoginController {
     /**
      * 登录
      */
+    @Operation(summary = "用户登录")
     @PostMapping("/login")
     public Result login(@RequestBody Emp emp){
         log.info("登录: {}", emp);
