@@ -1,144 +1,322 @@
 # Tlias Web Management
 
-Tlias 智能学习辅助系统 - 后端服务，基于 Spring Boot 构建的企业级员工与学员管理平台。
+> Tlias Intelligent Learning Assistance System - Backend Service
+>
+> An enterprise-grade employee and student management platform built with Spring Boot.
 
-## 项目简介
+---
 
-Tlias Web Management 是一个面向教育培训行业的综合管理系统，提供员工管理、部门管理、班级管理、学员管理等核心功能，并支持数据统计报表、文件上传、操作日志记录等扩展能力。
+## Table of Contents
 
-## 技术栈
+- [Project Overview](#project-overview)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Quick Start](#quick-start)
+- [API Documentation](#api-documentation)
+- [Development Guide](#development-guide)
+- [License](#license)
 
-| 类别 | 技术 | 版本 |
-|------|------|------|
-| 后端框架 | Spring Boot | 4.0.6 |
-| ORM 框架 | MyBatis | 4.0.1 |
-| 数据库 | MySQL | 8.x |
-| 分页插件 | PageHelper | 1.4.7 |
-| 认证授权 | JWT (jjwt) | 0.9.1 |
-| 文件存储 | 阿里云 OSS | 0.4.0 |
-| 切面编程 | Spring AOP | 3.1.1 |
-| 工具库 | Lombok | - |
-| Java 版本 | JDK | 17 |
+---
 
-## 功能模块
+## Project Overview
 
-### 1. 登录认证
-- 用户登录与身份验证
-- JWT Token 生成与校验
-- Token 拦截器 / 过滤器 双重防护
+Tlias Web Management is a comprehensive management system for the education and training industry. It provides core features such as employee management, department management, class management, and student management, along with extended capabilities like statistical reports, file uploads, operation logging, and RBAC permission control.
 
-### 2. 部门管理
-- 部门列表查询
-- 部门新增、修改、删除
-- 根据 ID 查询部门详情
+---
 
-### 3. 员工管理
-- 员工分页条件查询
-- 员工新增、修改、删除（支持批量删除）
-- 根据 ID 查询员工详情
-- 员工工作经历管理
+## Tech Stack
 
-### 4. 班级管理
-- 班级分页条件查询
-- 班级新增、修改、删除
-- 根据 ID 查询班级详情
-- 查询全部班级列表
+| Category | Technology | Version |
+|----------|-----------|---------|
+| Backend Framework | Spring Boot | 4.0.6 |
+| ORM Framework | MyBatis | 4.0.1 |
+| Database | MySQL | 8.x |
+| Cache | Redis | 7.x |
+| Message Queue | RabbitMQ | 3.x |
+| Search Engine | Elasticsearch | 8.12.0 |
+| Pagination | PageHelper | 1.4.7 |
+| Authentication | JWT (jjwt) | 0.9.1 |
+| File Storage | Alibaba Cloud OSS | 0.4.0 |
+| AOP | Spring AOP | 3.1.1 |
+| API Documentation | Knife4j (OpenAPI 3) | 4.5.0 |
+| Utility Library | Lombok | - |
+| Java Version | JDK | 17 |
+| Containerization | Docker Compose | - |
 
-### 5. 学员管理
-- 学员分页条件查询（支持姓名、学历、班级筛选）
-- 学员新增、修改、删除（支持批量删除）
-- 根据 ID 查询学员详情
-- 学员违纪扣分处理
+---
 
-### 6. 数据统计报表
-- 员工职位人数统计
-- 员工性别比例统计
-- 学员学历分布统计
-- 班级人数统计
+## Features
 
-### 7. 文件上传
-- 基于阿里云 OSS 的文件上传服务
-- 支持单文件最大 10MB，单次请求最大 100MB
+### 1. Authentication & Authorization
+- User login with BCrypt password verification
+- Dual-token mechanism (accessToken + refreshToken)
+- Multi-device login support
+- Active logout with token revocation
+- Scheduled cleanup of expired tokens
+- RBAC (Role-Based Access Control) permission system
+- Permission-based interface control via `@PreAuthorize` annotation
+- Redis caching for permissions and roles
 
-### 8. 操作日志
-- 基于 AOP 的操作日志自动记录
-- 关键操作（增删改）日志持久化存储
+### 2. Department Management
+- Department list query (tree structure)
+- Add, update, and delete departments
+- Get department details by ID
 
-## 项目结构
+### 3. Employee Management
+- Paginated conditional query for employees
+- Add, update, and batch delete employees
+- Get employee details by ID
+- Employee work experience management
+
+### 4. Class Management
+- Paginated conditional query for classes
+- Add, update, and delete classes
+- Get class details by ID
+- Get all classes list
+
+### 5. Student Management
+- Paginated conditional query for students (name, degree, class filter)
+- Add, update, and batch delete students
+- Get student details by ID
+- Student violation point deduction
+
+### 6. Reports & Statistics
+- Employee position count statistics
+- Employee gender ratio statistics
+- Student degree distribution statistics
+- Class student count statistics
+
+### 7. File Management
+- File upload based on Alibaba Cloud OSS
+- File type validation (images, documents)
+- File size limits (image: 5MB, document: 20MB)
+- File deletion support
+- Permission-controlled upload/delete operations
+
+### 8. Operation Logs
+- Auto-logging via AOP aspect
+- Log persistence to MySQL (async via RabbitMQ)
+- Full-text search with Elasticsearch
+- Enhanced log fields: IP, request method, URL, result status, error message
+- Paginated log query with filters
+
+### 9. Frontend Log Reporting
+- Frontend error/performance/behavior log collection
+- Dedicated `frontend_log` table
+- Paginated query with filters
+
+### 10. Data Dictionary
+- Dictionary data management by type
+- Common dictionaries: employee positions, student degrees, gender
+- Public API for dictionary lookup
+
+### 11. API Documentation
+- Auto-generated OpenAPI 3 documentation via Knife4j
+- Bearer token authentication support
+- Grouped by module (11 controller groups)
+- Accessible at: `http://localhost:8080/doc.html`
+
+---
+
+## Architecture
+
+### High-Level Architecture
+
+```
+                    ┌─────────────────────┐
+                    │     Frontend UI     │
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │  Spring Boot (API)   │
+                    └──────────┬──────────┘
+                               │
+          ┌────────────────────┼────────────────────┐
+          │                    │                    │
+ ┌────────▼──────┐  ┌──────────▼────────┐  ┌──────▼────────┐
+ │  TokenFilter  │  │  PermissionAspect │  │  Log Aspect   │
+ │  JWT verify   │  │  RBAC check       │  │  Record ops   │
+ └────────┬──────┘  └──────────┬────────┘  └──────┬────────┘
+          │                    │                    │
+          ▼                    ▼                    ▼
+ ┌─────────────────────────────────────────────────────────┐
+ │                    Service Layer                        │
+ └─────┬───────────┬──────────────┬──────────────┬─────────┘
+       │           │              │              │
+       ▼           ▼              ▼              ▼
+   DeptService  EmpService    ClazzService   StudentService
+       │           │              │              │
+       └───────────┴──────┬───────┴──────────────┘
+                          │
+                          ▼
+                    ┌─────────────┐
+                    │   MyBatis   │
+                    └──────┬──────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         ▼                 ▼                 ▼
+    ┌─────────┐       ┌─────────┐       ┌─────────┐
+    │  MySQL  │       │  Redis  │       │ RabbitMQ│
+    │ (Main)  │       │ (Cache) │       │  (Async)│
+    └─────────┘       └─────────┘       └────┬────┘
+                                             │
+                                             ▼
+                                        ┌───────────┐
+                                        │     ES    │
+                                        │ (Search)  │
+                                        └───────────┘
+```
+
+### Authentication Flow
+
+```
+Login → Generate accessToken (2h) + refreshToken (7d)
+      → Store refreshToken in DB
+      → Return both tokens + user info + roles + permissions
+
+Request → TokenFilter validates accessToken
+        → Load permissions from Redis (or DB if miss)
+        → Store in ThreadLocal (PermissionHolder)
+        → @PreAuthorize aspect checks permission
+        → Execute business logic
+        → Clear ThreadLocal
+```
+
+---
+
+## Project Structure
 
 ```
 src/main/java/org/example/
-├── anno/              # 自定义注解
-│   └── Log.java       # 操作日志注解
-├── aspect/            # AOP 切面
-│   └── OperationLogAspect.java
-├── config/            # 配置类
+├── anno/                  # Custom annotations
+│   ├── Log.java           # Operation log annotation
+│   └── PreAuthorize.java  # Permission check annotation
+├── aspect/                # AOP aspects
+│   ├── OperationLogAspect.java
+│   └── PermissionAspect.java
+├── config/                # Configuration classes
+│   ├── Knife4jConfig.java
+│   ├── RabbitMQConfig.java
+│   ├── RedisConfig.java
 │   └── WebConfig.java
-├── controller/        # 控制层
+├── controller/            # Controller layer (11 controllers)
+│   ├── AuthController.java
 │   ├── ClazzController.java
 │   ├── DeptController.java
+│   ├── DictController.java
 │   ├── EmpController.java
+│   ├── LogController.java
 │   ├── LoginController.java
 │   ├── ReportController.java
 │   ├── StudentController.java
-│   └── UploadController.java
-├── exception/         # 异常处理
+│   ├── UploadController.java
+│   └── UserController.java
+├── exception/             # Exception handling
 │   ├── BusinessException.java
 │   └── GlobalExceptionHandler.java
-├── filter/            # 过滤器
+├── filter/                # Servlet filters
 │   └── TokenFilter.java
-├── interceptor/       # 拦截器
+├── interceptor/           # Spring interceptors
 │   └── TokenInterceptor.java
-├── mapper/            # 数据访问层
+├── mapper/                # Data access layer
 │   ├── ClazzMapper.java
 │   ├── DeptMapper.java
+│   ├── DictDataMapper.java
 │   ├── EmpExprMapper.java
 │   ├── EmpLogMapper.java
+│   ├── EmpRoleMapper.java
 │   ├── EmpMapper.java
+│   ├── FrontendLogMapper.java
 │   ├── OperateLogMapper.java
+│   ├── PermissionMapper.java
+│   ├── RefreshTokenMapper.java
 │   └── StudentMapper.java
-├── pojo/              # 实体类
-│   ├── Clazz.java
-│   ├── ClazzCountOption.java
-│   ├── Dept.java
-│   ├── Emp.java
-│   ├── EmpExpr.java
-│   ├── EmpLog.java
-│   ├── EmpQueryParam.java
-│   ├── JobOption.java
-│   ├── LoginInfo.java
-│   ├── OperateLog.java
-│   ├── PageResult.java
-│   ├── Result.java
-│   └── Student.java
-├── service/           # 业务逻辑层
-│   ├── impl/
-│   ├── ClazzService.java
-│   ├── DeptService.java
-│   ├── EmpLogService.java
-│   ├── EmpService.java
-│   ├── ReportService.java
-│   └── StudentService.java
-├── utils/             # 工具类
+├── pojo/                  # Entity classes & DTOs
+│   ├── entity/            # Database entities
+│   ├── param/             # Query parameters
+│   ├── dto/               # Data transfer objects
+│   ├── vo/                # View objects
+│   └── ...
+├── service/               # Business logic layer
+│   ├── impl/              # Service implementations
+│   │   ├── AuthServiceImpl.java
+│   │   ├── PermissionServiceImpl.java
+│   │   ├── RoleServiceImpl.java
+│   │   ├── LogConsumer.java
+│   │   └── ...
+│   ├── AuthService.java
+│   ├── LogProducer.java
+│   ├── LogBatchWriter.java
+│   ├── PermissionService.java
+│   ├── RoleService.java
+│   └── ...
+├── task/                  # Scheduled tasks
+│   └── RefreshTokenCleanupTask.java
+├── utils/                 # Utility classes
 │   ├── AliyunOSSOperator.java
 │   ├── AliyunOSSProperties.java
 │   ├── CurrentHolder.java
-│   └── JwtUtils.java
-└── TliasWebManagementApplication.java  # 启动类
+│   ├── IpUtils.java
+│   ├── JwtUtils.java
+│   ├── PermissionHolder.java
+│   └── RedisUtil.java
+└── TliasWebManagementApplication.java  # Main class
 ```
 
-## 快速开始
+---
 
-### 环境要求
+## Quick Start
+
+### Prerequisites
 
 - JDK 17+
 - Maven 3.6+
-- MySQL 8.x
+- Docker & Docker Compose (recommended for local dev)
 
-### 数据库配置
+### Option 1: Docker Compose (Recommended)
 
-1. 创建数据库 `tlias`
-2. 修改 `src/main/resources/application.yml` 中的数据库连接信息：
+Start all infrastructure services with one command:
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd Tlias-web-management
+
+# Start MySQL, Redis, RabbitMQ, Elasticsearch
+docker-compose up -d
+
+# Check service status
+docker-compose ps
+```
+
+Services will be available at:
+| Service | Port | Management UI |
+|---------|------|--------------|
+| MySQL | 3306 | - |
+| Redis | 6379 | - |
+| RabbitMQ | 5672 | http://localhost:15672 (admin/admin) |
+| Elasticsearch | 9200 | - |
+
+### Option 2: Manual Setup
+
+Install and configure each service individually:
+- MySQL 8.x on port 3306
+- Redis on port 6379
+- RabbitMQ on port 5672 (management on 15672)
+- Elasticsearch 8.12.0 on port 9200
+
+### Database Initialization
+
+1. Create database: `tlias`
+2. Execute initialization scripts in order:
+   - `src/main/resources/db/init-all.sql` - Create all tables and seed data
+   - `src/main/resources/db/alter-operate-log.sql` - Enhance operate_log table (optional)
+
+### Configuration
+
+Update `src/main/resources/application.yml` or use `application-local.yml` for local overrides:
 
 ```yaml
 spring:
@@ -146,13 +324,17 @@ spring:
     url: jdbc:mysql://localhost:3306/tlias
     username: your_username
     password: your_password
-```
+  redis:
+    host: localhost
+    port: 6379
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  elasticsearch:
+    uris: http://localhost:9200
 
-### 阿里云 OSS 配置（可选）
-
-如需使用文件上传功能，请配置阿里云 OSS 信息：
-
-```yaml
 aliyun:
   oss:
     endpoint: oss-cn-hangzhou.aliyuncs.com
@@ -160,60 +342,51 @@ aliyun:
     region: cn-hangzhou
 ```
 
-### 启动项目
+### Run the Application
 
 ```bash
-# 克隆项目
-git clone <repository-url>
+# Build
+mvn clean package -DskipTests
 
-# 进入项目目录
-cd Tlias-web-management
-
-# 编译项目
-mvn clean compile
-
-# 启动服务
+# Run
 mvn spring-boot:run
 ```
 
-服务启动后访问：`http://localhost:8080`
+The application will start at `http://localhost:8080`
 
-## API 接口概览
+### Verify Installation
 
-| 模块 | 接口路径 | 方法 | 说明 |
-|------|----------|------|------|
-| 登录 | `/login` | POST | 用户登录 |
-| 部门 | `/depts` | GET | 查询部门列表 |
-| 部门 | `/depts` | POST | 新增部门 |
-| 部门 | `/depts` | DELETE | 删除部门 |
-| 部门 | `/depts/{id}` | GET | 根据ID查询部门 |
-| 部门 | `/depts` | PUT | 修改部门 |
-| 员工 | `/emps` | GET | 分页查询员工 |
-| 员工 | `/emps` | POST | 新增员工 |
-| 员工 | `/emps` | DELETE | 批量删除员工 |
-| 员工 | `/emps/{id}` | GET | 根据ID查询员工 |
-| 员工 | `/emps` | PUT | 修改员工 |
-| 班级 | `/clazzs` | GET | 分页查询班级 |
-| 班级 | `/clazzs` | POST | 新增班级 |
-| 班级 | `/clazzs/{id}` | DELETE | 删除班级 |
-| 班级 | `/clazzs/{id}` | GET | 根据ID查询班级 |
-| 班级 | `/clazzs` | PUT | 修改班级 |
-| 班级 | `/clazzs/list` | GET | 查询全部班级 |
-| 学员 | `/students` | GET | 分页查询学员 |
-| 学员 | `/students` | POST | 新增学员 |
-| 学员 | `/students/{ids}` | DELETE | 批量删除学员 |
-| 学员 | `/students/{id}` | GET | 根据ID查询学员 |
-| 学员 | `/students` | PUT | 修改学员 |
-| 学员 | `/students/violation/{id}/{score}` | PUT | 违纪处理 |
-| 报表 | `/report/empJobData` | GET | 员工职位统计 |
-| 报表 | `/report/empGenderData` | GET | 员工性别统计 |
-| 报表 | `/report/studentDegreeData` | GET | 学员学历统计 |
-| 报表 | `/report/studentCountData` | GET | 班级人数统计 |
-| 上传 | `/upload` | POST | 文件上传 |
+- **API Docs**: http://localhost:8080/doc.html
+- **Health Check**: Access any public endpoint (e.g., `/login`)
+- **RabbitMQ Console**: http://localhost:15672 (admin/admin)
 
-## 统一响应格式
+---
 
-所有接口返回统一的 `Result` 格式：
+## API Documentation
+
+Full interactive API documentation is available via Knife4j at:
+- **URL**: `http://localhost:8080/doc.html`
+- **Format**: OpenAPI 3.0
+- **Authentication**: Bearer token (login first to get token)
+
+### API Summary
+
+| Module | Endpoints | Permissions Required |
+|--------|-----------|---------------------|
+| Authentication | `/login`, `/auth/refresh`, `/auth/logout` | Public (login/logout) |
+| User Info | `/user/info` | Authenticated |
+| Department | `/depts` (GET/POST/PUT/DELETE) | `system:dept:*` |
+| Employee | `/emps` (GET/POST/PUT/DELETE) | `system:emp:*` |
+| Class | `/clazzs` (GET/POST/PUT/DELETE) | `stu:clazz:*` |
+| Student | `/students` (GET/POST/PUT/DELETE) | `stu:stu:*` |
+| Reports | `/report/*` | `report:*:view` |
+| Files | `/files/upload`, `/files` (DELETE) | `system:file:*` |
+| Dictionary | `/dicts`, `/dicts/all` | Public |
+| Logs | `/log/operate/page`, `/log/frontend/page` | `report:log:view` |
+
+### Default Response Format
+
+All endpoints return a unified `Result` structure:
 
 ```json
 {
@@ -223,18 +396,64 @@ mvn spring-boot:run
 }
 ```
 
-- `code`: 状态码，1 表示成功，0 表示失败
-- `msg`: 响应消息
-- `data`: 响应数据
+- `code`: Status code (1 = success, 0 = failure)
+- `msg`: Response message
+- `data`: Response payload
 
-## 开发规范
+---
 
-- 采用分层架构：Controller → Service → Mapper
-- 使用 Lombok 简化 POJO 类代码
-- 分页查询使用 PageHelper 插件
-- 全局异常统一处理
-- 操作日志通过 AOP 切面自动记录
+## Development Guide
+
+### Code Conventions
+
+- **Layered architecture**: Controller → Service → Mapper
+- **Entity separation**: Distinguish PO (persistent object), DTO, VO, BO
+- **Pagination**: Use PageHelper plugin for all list queries
+- **Exception handling**: Global exception handler with `@RestControllerAdvice`
+- **Logging**: Use `@Log` annotation for important operations
+- **Permission control**: Use `@PreAuthorize("perm:code")` on controller methods
+- **Constants**: Extract magic numbers and strings to constant classes or enums
+- **Comments**: JavaDoc for all public classes and methods
+
+### Caching Strategy
+
+| Cache Key | Content | TTL | Invalidated On |
+|-----------|---------|-----|----------------|
+| `perms:{empId}` | Permission code list | 30 min | Employee update/delete |
+| `roles:{empId}` | Role list | 30 min | Employee update/delete |
+
+### Message Queue Architecture
+
+```
+Operation Aspect → Direct Exchange → operate_log_queue → Consumer (batch write to MySQL + ES)
+Operation Aspect → Direct Exchange → frontend_log_queue → Consumer (batch write to MySQL + ES)
+```
+
+- **Batch size**: 10 messages or 5 second timeout
+- **Dead letter queue**: Configured for failed messages
+- **Message format**: JSON (Jackson serialization)
+
+### Docker Compose Commands
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Stop all services (keep data)
+docker-compose down
+
+# Stop and remove all data
+docker-compose down -v
+
+# View logs
+docker-compose logs -f
+
+# Restart a specific service
+docker-compose restart mysql
+```
+
+---
 
 ## License
 
-暂无
+This project is for internal training and educational purposes.
