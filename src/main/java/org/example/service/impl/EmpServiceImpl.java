@@ -43,9 +43,7 @@ public class EmpServiceImpl implements EmpService {
     @Autowired
     private RefreshTokenMapper refreshTokenMapper;
     @Autowired
-    private PermissionServiceImpl permissionServiceImpl;
-    @Autowired
-    private RoleServiceImpl roleServiceImpl;
+    private RedisUtil redisUtil;
 
     @Override
     public PageResult<Emp> getByPage(EmpQueryParam empQueryParam) {
@@ -231,8 +229,8 @@ public class EmpServiceImpl implements EmpService {
      */
     private void clearEmpCache(List<Integer> empIds) {
         for (Integer empId : empIds) {
-            permissionServiceImpl.clearCache(empId);
-            roleServiceImpl.clearCache(empId);
+            redisUtil.delete("perms:" + empId);
+            redisUtil.delete("roles:" + empId);
         }
     }
 

@@ -15,6 +15,20 @@ spring:
       max-file-size: 10MB
       #最大请求大小(包括所有文件和表单数据)
       max-request-size: 100MB
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: auto
+        prefetch: 10
+
+ #Elasticsearch 配置
+  elasticsearch:
+    uris: http://localhost:9200
 
 #Mybatis的相关配置
 mybatis:

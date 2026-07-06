@@ -23,6 +23,11 @@ public interface FrontendLogMapper {
     void insert(FrontendLog log);
 
     /**
+     * 批量插入前端日志
+     */
+    void batchInsert(@Param("list") List<FrontendLog> logs);
+
+    /**
      * 分页查询前端日志
      */
     List<FrontendLog> selectByPage(@Param("param") FrontendLogQueryParam param);

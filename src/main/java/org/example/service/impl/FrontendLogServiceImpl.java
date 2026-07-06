@@ -7,6 +7,7 @@ import org.example.pojo.FrontendLog;
 import org.example.pojo.FrontendLogQueryParam;
 import org.example.pojo.PageResult;
 import org.example.service.FrontendLogService;
+import org.example.service.LogProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,11 +24,15 @@ public class FrontendLogServiceImpl implements FrontendLogService {
     @Autowired
     private FrontendLogMapper frontendLogMapper;
 
+    @Autowired
+    private LogProducer logProducer;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void save(FrontendLog log) {
         log.setCreateTime(LocalDateTime.now());
-        frontendLogMapper.insert(log);
+        // 发送到 MQ，不再直接写 DB
+        logProducer.sendFrontendLog(log);
     }
 
     @Override

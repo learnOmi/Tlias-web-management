@@ -2,7 +2,6 @@ package org.example.filter;
 
 import io.jsonwebtoken.Claims;
 import org.example.service.PermissionService;
-import org.example.service.RoleService;
 import org.example.utils.CurrentHolder;
 import org.example.utils.JwtUtils;
 import org.example.utils.PermissionHolder;
@@ -23,9 +22,6 @@ import java.util.List;
 @Slf4j
 @WebFilter(urlPatterns = "/*")
 public class TokenFilter implements Filter {
-
-    @Autowired
-    private RoleService roleService;
 
     @Autowired
     private PermissionService permissionService;

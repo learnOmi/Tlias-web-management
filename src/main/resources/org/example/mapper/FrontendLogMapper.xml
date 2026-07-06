@@ -48,4 +48,14 @@
         ORDER BY create_time DESC
     </select>
 
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO frontend_log
+        (emp_id, type, level, message, url, user_agent, operate_ip, create_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.empId}, #{item.type}, #{item.level}, #{item.message},
+             #{item.url}, #{item.userAgent}, #{item.operateIp}, #{item.createTime})
+        </foreach>
+    </insert>
+
 </mapper>

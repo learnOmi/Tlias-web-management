@@ -19,6 +19,11 @@ public interface OperateLogMapper {
     void insert(OperateLog log);
 
     /**
+     * 批量插入操作日志
+     */
+    void batchInsert(@Param("list") List<OperateLog> logs);
+
+    /**
      * 分页查询操作日志
      */
     List<OperateLog> selectByPage(@Param("param") OperateLogQueryParam param);

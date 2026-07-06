@@ -58,4 +58,19 @@
         ORDER BY operate_time DESC
     </select>
 
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO operate_log
+        (operate_emp_id, operate_ip, operate_time, class_name, method_name,
+         request_method, request_url, method_params, return_value, result_status,
+         error_msg, cost_time)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.operateEmpId}, #{item.operateIp}, #{item.operateTime},
+             #{item.className}, #{item.methodName},
+             #{item.requestMethod}, #{item.requestUrl}, #{item.methodParams},
+             #{item.returnValue}, #{item.resultStatus},
+             #{item.errorMsg}, #{item.costTime})
+        </foreach>
+    </insert>
+
 </mapper>
