@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.FrontendLogMapper">
+
+    <insert id="insert" parameterType="org.example.pojo.FrontendLog">
+        INSERT INTO frontend_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="empId != null">emp_id,</if>
+            <if test="type != null">type,</if>
+            <if test="level != null">level,</if>
+            <if test="message != null">message,</if>
+            <if test="url != null">url,</if>
+            <if test="userAgent != null">user_agent,</if>
+            <if test="operateIp != null">operate_ip,</if>
+            <if test="createTime != null">create_time,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="empId != null">#{empId},</if>
+            <if test="type != null">#{type},</if>
+            <if test="level != null">#{level},</if>
+            <if test="message != null">#{message},</if>
+            <if test="url != null">#{url},</if>
+            <if test="userAgent != null">#{userAgent},</if>
+            <if test="operateIp != null">#{operateIp},</if>
+            <if test="createTime != null">#{createTime},</if>
+        </trim>
+    </insert>
+
+    <select id="selectByPage" resultType="org.example.pojo.FrontendLog">
+        SELECT id, emp_id, type, level, message, url, user_agent, operate_ip, create_time
+        FROM frontend_log
+        <where>
+            <if test="param.type != null and param.type != ''">
+                AND type = #{param.type}
+            </if>
+            <if test="param.level != null and param.level != ''">
+                AND level = #{param.level}
+            </if>
+            <if test="param.empId != null">
+                AND emp_id = #{param.empId}
+            </if>
+            <if test="param.begin != null and param.end != null">
+                AND create_time BETWEEN #{param.begin} AND #{param.end}
+            </if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

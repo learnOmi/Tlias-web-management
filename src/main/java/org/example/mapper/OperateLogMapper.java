@@ -1,15 +1,25 @@
 package org.example.mapper;
 
 import org.example.pojo.OperateLog;
-import org.apache.ibatis.annotations.Insert;
+import org.example.pojo.OperateLogQueryParam;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
+/**
+ * 操作日志 Mapper 接口
+ */
 @Mapper
 public interface OperateLogMapper {
 
-    //插入日志数据
-    @Insert("insert into operate_log (operate_emp_id, operate_time, class_name, method_name, method_params, return_value, cost_time) " +
-            "values (#{operateEmpId}, #{operateTime}, #{className}, #{methodName}, #{methodParams}, #{returnValue}, #{costTime});")
-    public void insert(OperateLog log);
+    /**
+     * 插入操作日志
+     */
+    void insert(OperateLog log);
 
+    /**
+     * 分页查询操作日志
+     */
+    List<OperateLog> selectByPage(@Param("param") OperateLogQueryParam param);
 }

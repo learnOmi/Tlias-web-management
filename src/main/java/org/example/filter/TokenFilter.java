@@ -16,6 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Token 过滤器
+ * 校验请求头中的 accessToken，加载用户权限到 ThreadLocal
+ */
 @Slf4j
 @WebFilter(urlPatterns = "/*")
 public class TokenFilter implements Filter {
@@ -27,22 +31,23 @@ public class TokenFilter implements Filter {
     private PermissionService permissionService;
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
         //1. 获取到请求路径
-        String requestURI = request.getRequestURI(); // /employee/login
+        String requestURI = request.getRequestURI();
 
-        //2. 判断是否是登录请求, 如果路径以 /login结尾, 说明是登录操作, 放行
-        if (requestURI.endsWith("/login")){
+        //2. 判断是否是登录请求, 放行
+        if (requestURI.endsWith("/login")) {
             log.info("登录请求, 放行");
             filterChain.doFilter(request, response);
             return;
         }
 
         // 判断是否是 Token 刷新请求, 放行
-        if ("/auth/refresh".equals(requestURI)){
+        if ("/auth/refresh".equals(requestURI)) {
             log.info("Token 刷新请求, 放行");
             filterChain.doFilter(request, response);
             return;
@@ -52,7 +57,7 @@ public class TokenFilter implements Filter {
         String token = request.getHeader("token");
 
         //4. 判断token是否存在, 如果不存在, 说明用户没有登录, 返回错误信息(响应401状态码)
-        if (token == null || token.isEmpty()){
+        if (token == null || token.isEmpty()) {
             log.info("令牌为空, 响应401");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -75,13 +80,14 @@ public class TokenFilter implements Filter {
             return;
         }
 
-        //6. 校验通过, 放行
-        log.info("令牌合法, 放行");
-        filterChain.doFilter(request, response);
-
-        //7. 删除ThreadLocal中的数据
-        CurrentHolder.remove();
-        PermissionHolder.remove();
-
+        try {
+            //6. 校验通过, 放行
+            log.info("令牌合法, 放行");
+            filterChain.doFilter(request, response);
+        } finally {
+            //7. 无论请求成功或失败，清理 ThreadLocal 防止内存泄漏
+            CurrentHolder.remove();
+            PermissionHolder.remove();
+        }
     }
 }

@@ -3,8 +3,8 @@ package org.example.utils;
 import java.util.List;
 
 /**
- * 当前用户信息持有类
- * 用于在请求上下文中存储当前登录用户的权限信息
+ * 当前用户权限信息持有类
+ * 使用 ThreadLocal 存储当前请求的权限列表，避免在各层之间传递参数
  */
 public class PermissionHolder {
 
@@ -32,6 +32,9 @@ public class PermissionHolder {
         return permissions.contains(permissionCode);
     }
 
+    /**
+     * 移除当前线程的权限信息，防止 ThreadLocal 内存泄漏
+     */
     public static void remove() {
         PERMISSIONS_LOCAL.remove();
     }

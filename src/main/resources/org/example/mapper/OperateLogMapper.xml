@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.OperateLogMapper">
+
+    <insert id="insert" parameterType="org.example.pojo.OperateLog">
+        INSERT INTO operate_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="operateEmpId != null">operate_emp_id,</if>
+            <if test="operateIp != null">operate_ip,</if>
+            <if test="operateTime != null">operate_time,</if>
+            <if test="className != null">class_name,</if>
+            <if test="methodName != null">method_name,</if>
+            <if test="requestMethod != null">request_method,</if>
+            <if test="requestUrl != null">request_url,</if>
+            <if test="methodParams != null">method_params,</if>
+            <if test="returnValue != null">return_value,</if>
+            <if test="resultStatus != null">result_status,</if>
+            <if test="errorMsg != null">error_msg,</if>
+            <if test="costTime != null">cost_time,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="operateEmpId != null">#{operateEmpId},</if>
+            <if test="operateIp != null">#{operateIp},</if>
+            <if test="operateTime != null">#{operateTime},</if>
+            <if test="className != null">#{className},</if>
+            <if test="methodName != null">#{methodName},</if>
+            <if test="requestMethod != null">#{requestMethod},</if>
+            <if test="requestUrl != null">#{requestUrl},</if>
+            <if test="methodParams != null">#{methodParams},</if>
+            <if test="returnValue != null">#{returnValue},</if>
+            <if test="resultStatus != null">#{resultStatus},</if>
+            <if test="errorMsg != null">#{errorMsg},</if>
+            <if test="costTime != null">#{costTime},</if>
+        </trim>
+    </insert>
+
+    <select id="selectByPage" resultType="org.example.pojo.OperateLog">
+        SELECT id, operate_emp_id, operate_ip, operate_time, class_name, method_name,
+               request_method, request_url, method_params, return_value,
+               result_status, error_msg, cost_time
+        FROM operate_log
+        <where>
+            <if test="param.className != null and param.className != ''">
+                AND class_name LIKE CONCAT('%', #{param.className}, '%')
+            </if>
+            <if test="param.methodName != null and param.methodName != ''">
+                AND method_name LIKE CONCAT('%', #{param.methodName}, '%')
+            </if>
+            <if test="param.resultStatus != null and param.resultStatus != ''">
+                AND result_status = #{param.resultStatus}
+            </if>
+            <if test="param.begin != null and param.end != null">
+                AND operate_time BETWEEN #{param.begin} AND #{param.end}
+            </if>
+        </where>
+        ORDER BY operate_time DESC
+    </select>
+
+</mapper>

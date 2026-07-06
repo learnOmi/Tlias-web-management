@@ -4,18 +4,19 @@
 <mapper namespace="org.example.mapper.RefreshTokenMapper">
 
     <insert id="insert" parameterType="org.example.pojo.RefreshToken" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO refresh_token (emp_id, token, expire_time, create_time)
-        VALUES (#{empId}, #{token}, #{expireTime}, #{createTime})
+        INSERT INTO refresh_token (emp_id, token, expire_time, revoked, create_time)
+        VALUES (#{empId}, #{token}, #{expireTime}, 0, #{createTime})
     </insert>
 
     <select id="selectByToken" resultType="org.example.pojo.RefreshToken">
         SELECT id, emp_id, token, expire_time, revoked, create_time
         FROM refresh_token
-        WHERE token = #{token} AND revoked = 0
+        WHERE token = #{token}
     </select>
 
     <update id="revokeByToken">
-        UPDATE refresh_token SET revoked = 1 WHERE token = #{token}
+        UPDATE refresh_token SET revoked = 1, expire_time = NOW()
+        WHERE token = #{token} AND revoked = 0
     </update>
 
     <delete id="deleteExpired">

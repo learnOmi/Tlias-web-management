@@ -11,9 +11,9 @@ import org.example.service.RoleService;
 import org.example.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,44 +47,56 @@ public class AuthServiceImpl implements AuthService {
     private static final long REFRESH_TOKEN_EXPIRATION = 7L * 24 * 60 * 60 * 1000;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public LoginInfo refreshToken(String refreshToken) {
         // 1. 查询数据库验证 refreshToken
         RefreshToken tokenRecord = refreshTokenMapper.selectByToken(refreshToken);
         if (tokenRecord == null) {
-            log.warn("refreshToken 无效或已吊销");
+            log.warn("refreshToken 无效");
             return null;
         }
 
-        // 2. 检查是否过期
-        if (tokenRecord.getExpireTime().isBefore(LocalDateTime.now())) {
+        // 2. 检查是否已吊销
+        if (tokenRecord.getRevoked() != null && tokenRecord.getRevoked() == 1) {
+            log.warn("refreshToken 已吊销");
+            return null;
+        }
+
+        // 3. 检查是否过期
+        if (tokenRecord.getExpireTime() == null || tokenRecord.getExpireTime().isBefore(LocalDateTime.now())) {
             log.warn("refreshToken 已过期");
             return null;
         }
 
         Integer empId = tokenRecord.getEmpId();
 
-        // 3. 吊销旧 refreshToken
-        refreshTokenMapper.revokeByToken(refreshToken);
+        // 4. 原子性吊销旧 refreshToken（WHERE revoked = 0 确保只吊销一次）
+        int affectedRows = refreshTokenMapper.revokeByToken(refreshToken);
+        if (affectedRows == 0) {
+            // 并发场景：另一个线程已经吊销了这个 token
+            log.warn("refreshToken 已被并发吊销，empId: {}", empId);
+            return null;
+        }
 
-        // 4. 查询用户信息
+        // 5. 查询用户信息
         LoginInfo.UserInfo userInfo = empService.getUserInfoById(empId);
         if (userInfo == null) {
             log.warn("用户不存在: {}", empId);
             return null;
         }
 
-        // 5. 生成新的 accessToken
+        // 6. 生成新的 accessToken
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", empId);
         claims.put("username", userInfo.getUsername());
         String newAccessToken = JwtUtils.generateAccessToken(claims);
 
-        // 6. 生成新的 refreshToken
+        // 7. 生成新的 refreshToken
         Map<String, Object> refreshClaims = new HashMap<>();
         refreshClaims.put("id", empId);
         String newRefreshToken = JwtUtils.generateRefreshToken(refreshClaims);
 
-        // 7. 保存新 refreshToken 到数据库
+        // 8. 保存新 refreshToken 到数据库
         RefreshToken newTokenRecord = new RefreshToken();
         newTokenRecord.setEmpId(empId);
         newTokenRecord.setToken(newRefreshToken);
@@ -92,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
         newTokenRecord.setCreateTime(LocalDateTime.now());
         refreshTokenMapper.insert(newTokenRecord);
 
-        // 8. 查询角色和权限
+        // 9. 查询角色和权限
         List<String> roleCodes = roleService.selectRolesByEmpId(empId).stream()
                 .map(role -> role.getCode())
                 .collect(Collectors.toList());
@@ -105,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
             permissions.add("*");
         }
 
-        // 9. 组装返回结果
+        // 10. 组装返回结果
         LoginInfo loginInfo = new LoginInfo();
         loginInfo.setId(empId);
         loginInfo.setUsername(userInfo.getUsername());
@@ -128,8 +140,12 @@ public class AuthServiceImpl implements AuthService {
             return;
         }
 
-        // 吊销当前设备的 refreshToken（多设备模式下只登出当前设备）
-        refreshTokenMapper.revokeByToken(refreshToken);
-        log.info("登出成功，refreshToken 已吊销");
+        // 原子性吊销当前设备的 refreshToken
+        int affectedRows = refreshTokenMapper.revokeByToken(refreshToken);
+        if (affectedRows > 0) {
+            log.info("登出成功，refreshToken 已吊销");
+        } else {
+            log.warn("登出失败：refreshToken 已不存在或已吊销");
+        }
     }
 }
