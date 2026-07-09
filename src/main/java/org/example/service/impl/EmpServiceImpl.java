@@ -3,6 +3,7 @@ package org.example.service.impl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.example.exception.BusinessException;
 import org.example.mapper.EmpExprMapper;
 import org.example.mapper.EmpMapper;
 import org.example.mapper.RefreshTokenMapper;
@@ -46,6 +47,7 @@ public class EmpServiceImpl implements EmpService {
     private RedisUtil redisUtil;
 
     @Override
+    @Transactional(readOnly = true)
     public PageResult<Emp> getByPage(EmpQueryParam empQueryParam) {
 
         /*
@@ -106,6 +108,7 @@ public class EmpServiceImpl implements EmpService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Emp getInfo(Integer id) {
         return empMapper.selectEmpExpById(id);
     }
@@ -113,15 +116,14 @@ public class EmpServiceImpl implements EmpService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void update(Emp emp) {
-        //1. 根据ID修改员工的基本信息
         emp.setUpdateTime(LocalDateTime.now());
-        empMapper.updateById(emp);
+        int rows = empMapper.updateById(emp);
+        if (rows == 0) {
+            throw new BusinessException("数据已被他人修改，请刷新后重试");
+        }
 
-        //2. 根据ID修改员工的工作经历信息
-        //2.1 先根据员工ID删除原有的工作经历
         empExprMapper.deleteByEmpIds(Arrays.asList(emp.getId()));
 
-        //2.2 再添加这个员工新的工作经历
         List<EmpExpr> exprList = emp.getEmpExprs();
         if(!CollectionUtils.isEmpty(exprList)){
             exprList.forEach(empExpr -> empExpr.setEmpId(emp.getId()));

@@ -82,8 +82,10 @@
             <if test="entryDate != null">entry_date = #{entryDate},</if>
             <if test="deptId != null">dept_id = #{deptId},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
+            version = version + 1,
         </set>
         WHERE id = #{id}
+          AND version = #{version}
     </update>
 
     <!--统计员工职位人数-->

@@ -22,5 +22,6 @@ public class Emp {
     private String deptName; // 部门名称
     private LocalDateTime createTime; //创建时间
     private LocalDateTime updateTime; //修改时间
+    private Integer version; //乐观锁版本号
     private List<EmpExpr> empExprs; //员工工作经历
 }

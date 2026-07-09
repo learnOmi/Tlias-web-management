@@ -31,7 +31,7 @@ public interface ClazzMapper {
     /**
      * 动态更新班级信息
      */
-    void update(Clazz clazz);
+    int update(Clazz clazz);
 
     /**
      * 根据ID删除班级

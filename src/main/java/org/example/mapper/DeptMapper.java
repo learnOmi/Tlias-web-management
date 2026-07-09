@@ -38,6 +38,6 @@ public interface DeptMapper {
     /**
      * 修改部门
      */
-    @Update("update dept set name=#{name},update_time=#{updateTime} where id=#{id}")
-    void update(Dept dept);
+    @Update("update dept set name=#{name}, update_time=#{updateTime}, version=version+1 where id=#{id} and version=#{version}")
+    int update(Dept dept);
 }

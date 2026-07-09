@@ -56,10 +56,12 @@
                 clazz_id = #{clazzId},
             </if>
             <if test="updateTime != null">
-                update_time = #{updateTime}
+                update_time = #{updateTime},
             </if>
+            version = version + 1,
         </set>
         where id = #{id}
+          and version = #{version}
     </update>
 
     <!--批量删除学生信息-->

@@ -2,6 +2,7 @@ package org.example.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import org.example.exception.BusinessException;
 import org.example.mapper.StudentMapper;
 import org.example.pojo.ClazzCountOption;
 import org.example.pojo.PageResult;
@@ -10,6 +11,7 @@ import org.example.service.StudentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class StudentServiceImpl implements StudentService {
 
     @Autowired
@@ -51,28 +54,30 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public void update(Student student) {
         student.setUpdateTime(LocalDateTime.now());
-        studentMapper.update(student);
+        int rows = studentMapper.update(student);
+        if (rows == 0) {
+            throw new BusinessException("数据已被他人修改，请刷新后重试");
+        }
     }
-
 
     @Override
     public void delete(List<Integer> ids) {
         studentMapper.delete(ids);
     }
 
-
     @Override
     public void violationHandle(Integer id, Integer score) {
         studentMapper.updateViolation(id, score);
     }
 
-
     @Override
+    @Transactional(readOnly = true)
     public List<Map> getStudentDegreeData() {
         return studentMapper.countStudentDegreeData();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ClazzCountOption getStudentCountData() {
         List<Map<String, Object>> countList = studentMapper.getStudentCount();
         if(!CollectionUtils.isEmpty(countList)){

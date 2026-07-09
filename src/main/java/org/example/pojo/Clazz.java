@@ -20,6 +20,7 @@ public class Clazz {
     private Integer subject; //学科
     private LocalDateTime createTime; //创建时间
     private LocalDateTime updateTime; //修改时间
+    private Integer version; //乐观锁版本号
 
     private String masterName; //班主任姓名
     private String status; //班级状态 - 未开班 , 在读 , 已结课

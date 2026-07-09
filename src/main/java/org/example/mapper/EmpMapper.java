@@ -46,7 +46,7 @@ public interface EmpMapper {
     /**
      * 修改员工信息
      */
-    void updateById(Emp emp);
+    int updateById(Emp emp);
 
     /**
      * 统计员工职位人数
